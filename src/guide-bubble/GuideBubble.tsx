@@ -175,9 +175,9 @@ export function GuideBubble() {
         }
         .guide-toggle-btn {
           width: 100%;
-          padding: 5px 8px;
+          padding: 4px 8px;
           background: none;
-          border: 1px solid #313244;
+          border: none;
           border-radius: 8px;
           color: #cdd6f4;
           font-size: 12px;
@@ -397,6 +397,17 @@ export function GuideBubble() {
           >
             <span className="guide-toggle-icon">💬</span>
             Get 1:1 help
+          </a>
+
+          <a
+            href="https://forms.gle/3U5wKpc3ZeEWJvaq7"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="guide-toggle-btn"
+            style={{ textDecoration: "none" }}
+          >
+            <span className="guide-toggle-icon">📝</span>
+            Give feedback
           </a>
         </div>
       </div>
