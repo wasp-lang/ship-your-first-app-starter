@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { useCourseProgress, getGuideMessage } from "./useGuideState";
+import { MODAL_REGISTRY } from "./modalRegistry";
 
 const TOTAL_BEATS = 4;
 
@@ -17,10 +18,13 @@ export function GuideBubble() {
     } else {
       sessionStorage.removeItem("guide-dismissed-step");
     }
-    // Force re-render by dispatching a storage event won't work same-tab,
-    // so we use a dummy state to trigger it
     setRenderTick((t) => t + 1);
   };
+
+  const interactiveStep = progress?.interactiveStep ?? null;
+  const [dismissedModal, setDismissedModal] = useState<string | null>(null);
+  const ActiveModal = interactiveStep ? MODAL_REGISTRY[interactiveStep] : null;
+  const showModal = !!ActiveModal && interactiveStep !== dismissedModal;
 
   const [, setRenderTick] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -51,58 +55,59 @@ export function GuideBubble() {
   return (
     <>
       <style>{`
-        /* ── Bee button ── */
+        /* ── FAB button ── */
         .guide-fab {
           position: fixed;
           bottom: 20px;
           right: 20px;
           z-index: 100000;
-          width: 48px;
-          height: 48px;
+          width: 44px;
+          height: 44px;
           border-radius: 50%;
-          border: 2px solid #89b4fa;
-          background: #1e1e2e;
+          border: 1.5px solid #d8d8d0;
+          background: #ffffff;
           cursor: pointer;
-          font-size: 24px;
+          font-size: 22px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
           padding: 0;
         }
         .guide-fab:hover {
-          transform: scale(1.1);
-          box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+          border-color: #111111;
+          box-shadow: 0 4px 14px rgba(0,0,0,0.12);
         }
         .guide-fab-ring {
           position: absolute;
-          inset: -4px;
+          inset: -5px;
           border-radius: 50%;
-          border: 2px solid rgba(137, 180, 250, 0.4);
-          animation: guide-fab-pulse 2s ease-in-out infinite;
+          border: 1.5px solid #111111;
+          pointer-events: none;
+          animation: guide-fab-pulse 2.5s ease-in-out infinite;
         }
         @keyframes guide-fab-pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0; transform: scale(1.3); }
+          0%, 100% { opacity: 0.55; }
+          50%       { opacity: 0.08; }
         }
 
         /* ── Hover menu ── */
         .guide-menu {
           position: fixed;
-          bottom: 76px;
+          bottom: 72px;
           right: 20px;
           z-index: 100000;
           width: 240px;
-          background: #1e1e2e;
-          border: 1px solid #313244;
-          border-radius: 12px;
+          background: #ffffff;
+          border: 1px solid #d8d8d0;
+          border-radius: 4px;
           padding: 12px;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+          box-shadow: 0 4px 20px rgba(0,0,0,0.1);
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-          color: #cdd6f4;
+          color: #111111;
           opacity: 0;
-          transform: translateY(8px) scale(0.95);
+          transform: translateY(8px) scale(0.97);
           pointer-events: none;
           transition: opacity 0.2s ease, transform 0.2s ease;
         }
@@ -112,16 +117,17 @@ export function GuideBubble() {
           pointer-events: auto;
         }
 
+        /* ── Menu label ── */
         .guide-menu-label {
           font-size: 10px;
-          font-weight: 600;
+          font-weight: 700;
           text-transform: uppercase;
-          letter-spacing: 0.06em;
-          color: #6c7086;
-          margin-bottom: 8px;
+          letter-spacing: 0.08em;
+          color: #aaaaaa;
+          margin-bottom: 10px;
         }
 
-        /* ── Progress section ── */
+        /* ── Progress ── */
         .guide-progress {
           margin-bottom: 12px;
         }
@@ -133,95 +139,100 @@ export function GuideBubble() {
         }
         .guide-progress-module {
           font-size: 13px;
-          font-weight: 600;
-          color: #cdd6f4;
+          font-weight: 700;
+          color: #111111;
+          letter-spacing: -0.01em;
         }
         .guide-progress-beat {
           font-size: 11px;
-          color: #a6adc8;
+          color: #555555;
         }
         .guide-progress-bar-track {
           width: 100%;
-          height: 6px;
-          background: #313244;
-          border-radius: 3px;
+          height: 4px;
+          background: #e8e8e0;
+          border-radius: 2px;
           overflow: hidden;
         }
         .guide-progress-bar-fill {
           height: 100%;
-          background: #89b4fa;
-          border-radius: 3px;
+          background: #111111;
+          border-radius: 2px;
           transition: width 0.4s ease;
         }
         .guide-progress-bar-fill-complete {
-          background: #a6e3a1;
+          background: #555555;
         }
         .guide-progress-title {
           font-size: 11px;
-          color: #a6adc8;
-          margin-top: 4px;
+          color: #555555;
+          margin-top: 5px;
         }
         .guide-progress-empty {
           font-size: 12px;
-          color: #6c7086;
+          color: #aaaaaa;
           font-style: italic;
         }
 
-        /* ── Menu buttons ── */
+        /* ── Divider ── */
         .guide-menu-divider {
           height: 1px;
-          background: #313244;
+          background: #e8e8e0;
           margin: 8px 0;
         }
+
+        /* ── Menu buttons ── */
         .guide-toggle-btn {
           width: 100%;
-          padding: 4px 8px;
+          padding: 5px 6px;
           background: none;
           border: none;
-          border-radius: 8px;
-          color: #cdd6f4;
+          border-radius: 3px;
+          color: #111111;
           font-size: 12px;
           cursor: pointer;
           display: flex;
           align-items: center;
           gap: 8px;
           transition: background 0.15s ease;
+          text-align: left;
         }
         .guide-toggle-btn:hover {
-          background: rgba(255,255,255,0.05);
+          background: rgba(0,0,0,0.04);
         }
         .guide-toggle-btn:disabled {
-          color: #45475a;
+          color: #aaaaaa;
           cursor: default;
         }
         .guide-toggle-btn:disabled:hover {
           background: none;
         }
         .guide-toggle-icon {
-          font-size: 16px;
-          width: 20px;
+          font-size: 14px;
+          width: 18px;
           text-align: center;
+          flex-shrink: 0;
         }
 
         /* ── Share links ── */
         .guide-share-links {
           display: flex;
           flex-direction: column;
-          gap: 2px;
-          margin-top: 4px;
-          padding-left: 28px;
+          gap: 1px;
+          margin-top: 2px;
+          padding-left: 26px;
         }
         .guide-share-link {
           font-size: 12px;
-          color: #a6adc8;
+          color: #555555;
           text-decoration: none;
-          padding: 4px 8px;
-          border-radius: 6px;
+          padding: 4px 6px;
+          border-radius: 3px;
           transition: background 0.15s ease, color 0.15s ease;
         }
         .guide-share-link:hover {
-          background: rgba(255,255,255,0.05);
-          color: #cdd6f4;
+          background: rgba(0,0,0,0.04);
+          color: #111111;
         }
 
         /* ── Guide bubble (top center) ── */
@@ -233,15 +244,15 @@ export function GuideBubble() {
           z-index: 99999;
           max-width: 480px;
           width: calc(100% - 32px);
-          padding: 12px 20px;
-          background: #1e1e2e;
-          color: #cdd6f4;
-          border: 2px solid #89b4fa;
-          border-radius: 12px;
+          padding: 11px 16px;
+          background: #ffffff;
+          color: #111111;
+          border: 1.5px solid #111111;
+          border-radius: 4px;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-          font-size: 14px;
-          line-height: 1.5;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(137,180,250,0.1);
+          font-size: 13px;
+          line-height: 1.55;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.08);
           display: flex;
           align-items: center;
           gap: 12px;
@@ -257,7 +268,7 @@ export function GuideBubble() {
           transition: opacity 0.3s ease, transform 0.3s ease;
         }
         .guide-bubble-avatar {
-          font-size: 22px;
+          font-size: 20px;
           flex-shrink: 0;
         }
         .guide-bubble-message {
@@ -267,24 +278,22 @@ export function GuideBubble() {
         .guide-bubble-dismiss {
           background: none;
           border: none;
-          color: #6c7086;
+          color: #aaaaaa;
           cursor: pointer;
           font-size: 16px;
-          padding: 2px 6px;
-          border-radius: 4px;
+          padding: 2px 4px;
+          border-radius: 3px;
           flex-shrink: 0;
+          line-height: 1;
         }
         .guide-bubble-dismiss:hover {
-          color: #cdd6f4;
-          background: rgba(255,255,255,0.05);
+          color: #111111;
+          background: rgba(0,0,0,0.04);
         }
       `}</style>
 
       {/* ── Floating bee button ── */}
-      <div
-        onMouseEnter={handleMenuEnter}
-        onMouseLeave={handleMenuLeave}
-      >
+      <div onMouseEnter={handleMenuEnter} onMouseLeave={handleMenuLeave}>
         <button className="guide-fab" aria-label="Course guide">
           🐝
           {hasMessage && guideHidden && <span className="guide-fab-ring" />}
@@ -330,57 +339,30 @@ export function GuideBubble() {
               type="checkbox"
               checked={hasMessage && !guideHidden}
               disabled={!hasMessage}
-              onChange={(e) => setGuideHidden(!e.target.checked)}  
-              style={{ accentColor: "#89b4fa" }}
+              onChange={(e) => setGuideHidden(!e.target.checked)}
+              style={{ accentColor: "#111111" }}
             />
             {hasMessage ? "Show guide" : "No guide message"}
           </label>
 
           <div className="guide-menu-divider" />
 
-          <button
-            className="guide-toggle-btn"
-            onClick={() => setShareOpen((s) => !s)}
-          >
+          <button className="guide-toggle-btn" onClick={() => setShareOpen((s) => !s)}>
             <span className="guide-toggle-icon">📣</span>
             Share your progress
           </button>
           {shareOpen && (
             <div className="guide-share-links">
-              <a
-                href={shareUrl("https://x.com/intent/tweet?text=")}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="guide-share-link"
-                onClick={() => setShareOpen(false)}
-              >
+              <a href={shareUrl("https://x.com/intent/tweet?text=")} target="_blank" rel="noopener noreferrer" className="guide-share-link" onClick={() => setShareOpen(false)}>
                 𝕏 Twitter / X
               </a>
-              <a
-                href={shareUrl("https://bsky.app/intent/compose?text=")}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="guide-share-link"
-                onClick={() => setShareOpen(false)}
-              >
+              <a href={shareUrl("https://bsky.app/intent/compose?text=")} target="_blank" rel="noopener noreferrer" className="guide-share-link" onClick={() => setShareOpen(false)}>
                 🦋 Bluesky
               </a>
-              <a
-                href={shareUrl("https://www.linkedin.com/sharing/share-offsite/?url=&summary=")}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="guide-share-link"
-                onClick={() => setShareOpen(false)}
-              >
+              <a href={shareUrl("https://www.linkedin.com/sharing/share-offsite/?url=&summary=")} target="_blank" rel="noopener noreferrer" className="guide-share-link" onClick={() => setShareOpen(false)}>
                 💼 LinkedIn
               </a>
-              <a
-                href={shareUrl("https://www.facebook.com/sharer/sharer.php?quote=")}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="guide-share-link"
-                onClick={() => setShareOpen(false)}
-              >
+              <a href={shareUrl("https://www.facebook.com/sharer/sharer.php?quote=")} target="_blank" rel="noopener noreferrer" className="guide-share-link" onClick={() => setShareOpen(false)}>
                 📘 Facebook
               </a>
             </div>
@@ -388,29 +370,21 @@ export function GuideBubble() {
 
           <div className="guide-menu-divider" />
 
-          <a
-            href="https://discord.gg/rzdnErX"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="guide-toggle-btn"
-            style={{ textDecoration: "none" }}
-          >
+          <a href="https://discord.gg/rzdnErX" target="_blank" rel="noopener noreferrer" className="guide-toggle-btn" style={{ textDecoration: "none" }}>
             <span className="guide-toggle-icon">💬</span>
             Get 1:1 help
           </a>
-
-          <a
-            href="https://forms.gle/3U5wKpc3ZeEWJvaq7"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="guide-toggle-btn"
-            style={{ textDecoration: "none" }}
-          >
+          <a href="https://forms.gle/3U5wKpc3ZeEWJvaq7" target="_blank" rel="noopener noreferrer" className="guide-toggle-btn" style={{ textDecoration: "none" }}>
             <span className="guide-toggle-icon">📝</span>
             Give feedback
           </a>
         </div>
       </div>
+
+      {/* ── Interactive modals ── */}
+      {showModal && ActiveModal && (
+        <ActiveModal onDismiss={() => setDismissedModal(interactiveStep)} />
+      )}
 
       {/* ── Guide bubble (top center) ── */}
       {showBubble && (

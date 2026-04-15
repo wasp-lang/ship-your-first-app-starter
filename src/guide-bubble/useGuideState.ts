@@ -6,6 +6,7 @@ export interface CourseProgress {
   title: string;
   status: "in-progress" | "complete";
   guideStep: number | null;
+  interactiveStep?: string;
 }
 
 const POLL_INTERVAL = 2000;
