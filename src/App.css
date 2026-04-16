@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=DM+Serif+Display&display=swap");
 
 @theme {
   --text-tiny: 0.625rem; /* Font size is 10px */
@@ -20,12 +21,19 @@
 
 body {
   @apply has-[dialog:open]:overflow-hidden;
+  font-family: 'Inter', sans-serif;
+  background: #ffffff;
+  color: #111111;
 }
 
 @utility card {
-  @apply rounded-xl border border-neutral-200 bg-white shadow-xs transition-all duration-200;
+  @apply rounded-sm border border-neutral-200 bg-white transition-all duration-200;
+}
+
+@utility heading-display {
+  font-family: 'DM Serif Display', serif;
 }
 
 @utility label {
-  @apply text-sm font-medium text-neutral-700;
+  @apply text-sm font-medium text-neutral-500;
 }

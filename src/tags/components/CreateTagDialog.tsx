@@ -12,7 +12,8 @@ export function CreateTagDialog() {
       <Button
         className="flex items-center gap-2"
         type="button"
-        size="sm"
+        size="xs"
+        variant="ghost"
         onClick={() => setTagDialogOpen(true)}
       >
         <span>Add a Tag</span>

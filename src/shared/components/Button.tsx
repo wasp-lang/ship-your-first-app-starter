@@ -69,7 +69,7 @@ function getButtonClasses({
   className: ClassNameValue;
 }): string {
   return twJoin(
-    "rounded-md font-semibold",
+    "rounded-sm font-semibold",
     variantStyles[variant],
     sizeStyles[size],
     className,
@@ -87,5 +87,5 @@ const variantStyles: Record<ButtonVariant, ClassNameValue> = {
     "bg-primary-500 hover:bg-primary-400 active:bg-primary-300 text-neutral-800",
   danger: "bg-red-600 text-white hover:bg-red-700 active:bg-red-800",
   ghost:
-    "bg-transparent text-neutral-800 hover:bg-neutral-100 active:bg-neutral-200",
+    "bg-transparent text-neutral-700 border border-neutral-300 hover:bg-neutral-100 active:bg-neutral-200",
 };

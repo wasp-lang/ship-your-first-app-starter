@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
+import { AnimatePresence } from "framer-motion";
 import { useCourseProgress, getGuideMessage } from "./useGuideState";
-import { MODAL_REGISTRY } from "./modalRegistry";
+import { DRAWER_REGISTRY } from "./drawerRegistry";
 
 const TOTAL_BEATS = 4;
 
@@ -22,9 +23,9 @@ export function GuideBubble() {
   };
 
   const interactiveStep = progress?.interactiveStep ?? null;
-  const [dismissedModal, setDismissedModal] = useState<string | null>(null);
-  const ActiveModal = interactiveStep ? MODAL_REGISTRY[interactiveStep] : null;
-  const showModal = !!ActiveModal && interactiveStep !== dismissedModal;
+  const [dismissedDrawer, setDismissedDrawer] = useState<string | null>(null);
+  const ActiveDrawer = interactiveStep ? DRAWER_REGISTRY[interactiveStep] : null;
+  const showDrawer = !!ActiveDrawer && interactiveStep !== dismissedDrawer;
 
   const [, setRenderTick] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -381,10 +382,12 @@ export function GuideBubble() {
         </div>
       </div>
 
-      {/* ── Interactive modals ── */}
-      {showModal && ActiveModal && (
-        <ActiveModal onDismiss={() => setDismissedModal(interactiveStep)} />
-      )}
+      {/* ── Interactive drawers ── */}
+      <AnimatePresence>
+        {showDrawer && ActiveDrawer && (
+          <ActiveDrawer onDismiss={() => setDismissedDrawer(interactiveStep)} />
+        )}
+      </AnimatePresence>
 
       {/* ── Guide bubble (top center) ── */}
       {showBubble && (

@@ -33,7 +33,7 @@ export function TaskList() {
 
   return (
     <div className="flex flex-col gap-6">
-      <ul className="flex flex-col gap-2">
+      <ul className="flex flex-col divide-y divide-neutral-100">
         {tasks.map((task) => (
           <TaskListItem task={task} key={task.id} />
         ))}
@@ -50,6 +50,7 @@ export function TaskList() {
           <Button
             className="flex items-center gap-2"
             size="sm"
+            variant="ghost"
             onClick={handleDeleteCompletedTasks}
           >
             Clear completed
