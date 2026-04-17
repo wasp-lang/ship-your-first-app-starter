@@ -1,5 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700;800;900&display=swap");
 @import "tailwindcss";
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=DM+Serif+Display&display=swap");
 
 @theme {
   --text-tiny: 0.625rem; /* Font size is 10px */
@@ -31,7 +31,9 @@ body {
 }
 
 @utility heading-display {
-  font-family: 'DM Serif Display', serif;
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 @utility label {
